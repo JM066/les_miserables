@@ -1,10 +1,7 @@
 import { Chart } from "regraph"
-import useData from "../../hooks/api/useMiserables"
 import { arrayToMap } from "../../helpers/arrayHelper"
-import { Suspense, useMemo } from "react"
+import { useMemo } from "react"
 import { normalizeValue } from "../../helpers/normalizeHelper"
-import { ErrorBoundary } from "react-error-boundary"
-import ErrorFallback from "../ErrorFallback"
 import useMiserables from "../../hooks/api/useMiserables"
 
 const COLORS = [
@@ -20,9 +17,9 @@ const COLORS = [
   "#d492aa",
   "#e6413e",
 ]
-function ChartContainer() {
-  const { data } = useMiserables()
 
+function ChartContainer() {
+  const { data, isLoading } = useMiserables()
   const links = useMemo(
     () =>
       arrayToMap(
@@ -73,13 +70,8 @@ function ChartContainer() {
     [values, data?.nodes, min, max]
   )
   const items = { ...nodes, ...links }
+  if (isLoading) return <div className="loader"></div>
 
-  return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Suspense fallback={<div className="loader"> </div>}>
-        <Chart items={items} />
-      </Suspense>
-    </ErrorBoundary>
-  )
+  return <Chart items={items} />
 }
 export default ChartContainer

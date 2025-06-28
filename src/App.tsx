@@ -1,17 +1,24 @@
 import "./App.css"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import MyChart from "./components/MyChart"
+import ChartContainer from "./components/ChartContainer"
+import { Suspense } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+import ErrorFallback from "./components/ErrorFallback"
 
 const queryClient = new QueryClient()
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div style={{ height: "100vh", width: "100vw" }}>
-        <MyChart />
-      </div>
-    </QueryClientProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <Suspense fallback={<div className="loader"></div>}>
+          <div className="flex flex-col items-center justify-center h-screen w-screen">
+            <ChartContainer />
+          </div>
+        </Suspense>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

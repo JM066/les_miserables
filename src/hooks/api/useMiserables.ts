@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 export interface DataResponse {
   nodes: { name: string; group: number }[]
   links: { source: number; target: number; value: number }[]
@@ -6,7 +6,7 @@ export interface DataResponse {
 const useMiserables = () => {
   const queryKey = ["miserables"]
 
-  return useSuspenseQuery<DataResponse>({
+  return useQuery<DataResponse, Error>({
     queryKey,
     queryFn: async () => {
       const response = await fetch("https://bost.ocks.org/mike/miserables/miserables.json")
