@@ -8,9 +8,9 @@ const queryClient = new QueryClient()
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      {/* <div style={{ height: "100vh", width: "100vw" }}> */}
-      <MyChart />
-      {/* </div> */}
+      <div style={{ height: "100vh", width: "100vw" }}>
+        <MyChart />
+      </div>
     </QueryClientProvider>
   )
 }
