@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react"
 import { normalizeValue } from "../../helpers/normalizeHelper"
 import useMiserables from "../../hooks/api/useMiserables"
 
-const COLORS = [
+const colors = [
   "#6b9996",
   "#e6c73e",
   "#85d457",
@@ -25,11 +25,11 @@ function ChartContainer() {
     () =>
       arrayToMap(
         data?.links ?? [],
-        (_d, i) => `link${i}`,
-        (d) => ({
-          id1: `node${d.source}`,
-          id2: `node${d.target}`,
-          width: d.value,
+        (_l, i) => `link${i}`,
+        (l) => ({
+          id1: `node${l.source}`,
+          id2: `node${l.target}`,
+          width: l.value,
           color: "rgb(4, 129, 112)",
         })
       ),
@@ -65,11 +65,11 @@ function ChartContainer() {
       if (!contacts?.length) return 0
 
       let count = 0
-      for (const id of contacts) {
-        if (added.has(id)) continue
-        added.add(id)
+      for (const person of contacts) {
+        if (added.has(person)) continue
+        added.add(person)
 
-        const contact = connection.relMaps[id]
+        const contact = connection.relMaps[person]
         count += 1 + relatedConnections(contact, added)
       }
 
@@ -89,7 +89,7 @@ function ChartContainer() {
 
       const visited = new Set<string>()
       const count = relatedConnections(connection.relMaps[contact], visited)
-      cacheMap[contact] = Array.from(visited)
+      cacheMap[contact] = [...visited]
 
       if (!countMap[contact]) {
         countMap[contact] = count
@@ -107,13 +107,13 @@ function ChartContainer() {
     () =>
       arrayToMap(
         data?.nodes ?? [],
-        (_d, i) => `node${i}`,
-        (d) => {
+        (_n, i) => `node${i}`,
+        (n) => {
           return {
-            color: COLORS[d.group],
-            size: normalizeValue(connectionCounts.countMap[d.name], min, max),
+            color: colors[n.group],
+            size: normalizeValue(connectionCounts.countMap[n.name], min, max),
             label: {
-              text: d.name,
+              text: n.name,
               backgroundColor: "transparent",
             },
           }

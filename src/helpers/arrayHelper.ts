@@ -1,4 +1,5 @@
 type Key = string | number
+
 export function arrayToMap<TItem, TKey extends Key, TValue>(
   array: TItem[],
   keyResolver: (item: TItem, index: number) => TKey,
