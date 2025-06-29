@@ -1,6 +1,6 @@
 import { Chart } from "regraph"
 import { arrayToMap } from "../../helpers/arrayHelper"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { normalizeValue } from "../../helpers/normalizeHelper"
 import useMiserables from "../../hooks/api/useMiserables"
 
@@ -20,6 +20,7 @@ const COLORS = [
 
 function ChartContainer() {
   const { data, isLoading, error, isError } = useMiserables()
+
   const links = useMemo(
     () =>
       arrayToMap(
@@ -35,31 +36,82 @@ function ChartContainer() {
     [data?.links]
   )
 
-  const values = useMemo(() => {
-    const valueMap: Record<number, number> = {}
-    if (!data?.links) return valueMap
+  const connection = useMemo(() => {
+    const nodes = data?.nodes ?? []
+    const links = data?.links ?? []
 
-    for (const { source, target, value } of data.links) {
-      valueMap[source] = (valueMap[source] ?? 0) + value
-      valueMap[target] = (valueMap[target] ?? 0) + value
+    const relMaps: Record<string, string[]> = {}
+    const relList: string[] = []
+
+    for (const link of links) {
+      const fromNode = nodes[link.source]
+      const toNode = nodes[link.target]
+      if (!fromNode || !toNode) continue
+
+      const person = fromNode.name
+      const related = toNode.name
+      if (relMaps[person]) {
+        relMaps[person].push(related)
+      } else {
+        relMaps[person] = [related]
+        relList.push(person)
+      }
     }
-    return valueMap
-  }, [data?.links])
+    return { relMaps, relList }
+  }, [data?.links, data?.nodes])
+
+  const relatedConnections = useCallback(
+    (contacts: string[], added: Set<string>): number => {
+      if (!contacts?.length) return 0
+
+      let count = 0
+      for (const id of contacts) {
+        if (added.has(id)) continue
+        added.add(id)
+
+        const contact = connection.relMaps[id]
+        count += 1 + relatedConnections(contact, added)
+      }
+
+      return count
+    },
+    [connection.relMaps]
+  )
+
+  const connectionCounts = useMemo(() => {
+    const countMap: Record<string, number> = {}
+    const cacheMap: Record<string, string[]> = {}
+    const counts: number[] = []
+
+    while (connection.relList.length > 0) {
+      const contact = connection.relList.pop()
+      if (!contact) continue
+
+      const visited = new Set<string>()
+      const count = relatedConnections(connection.relMaps[contact], visited)
+      cacheMap[contact] = Array.from(visited)
+
+      if (!countMap[contact]) {
+        countMap[contact] = count
+        counts.push(count)
+      }
+    }
+    return { countMap, counts }
+  }, [connection.relList, connection.relMaps, relatedConnections])
 
   const [min, max] = useMemo(() => {
-    const values = data?.links?.map((link) => link.value ?? 0) ?? []
-    return [values.length ? Math.min(...values) : 0, values.length ? Math.max(...values) : 0]
-  }, [data?.links])
+    return [Math.min(...connectionCounts.counts), Math.max(...connectionCounts.counts)]
+  }, [connectionCounts])
 
   const nodes = useMemo(
     () =>
       arrayToMap(
         data?.nodes ?? [],
         (_d, i) => `node${i}`,
-        (d, i) => {
+        (d) => {
           return {
             color: COLORS[d.group],
-            size: normalizeValue(values[i], min, max),
+            size: normalizeValue(connectionCounts.countMap[d.name], min, max),
             label: {
               text: d.name,
               backgroundColor: "transparent",
@@ -67,8 +119,9 @@ function ChartContainer() {
           }
         }
       ),
-    [values, data?.nodes, min, max]
+    [connectionCounts.countMap, data?.nodes, min, max]
   )
+
   const items = { ...nodes, ...links }
 
   if (isLoading) return <div className="loader" />
