@@ -10,7 +10,7 @@
 }
 .loader {
   @apply border-solid border-4 border-gray-200;
-  @apply rounded-full w-8 h-8;
-  border-top-color: pink;
+  @apply rounded-full w-12 h-12;
+  border-top-color: #2dcda8;
   animation: spin 1s linear infinite;
 }

@@ -19,7 +19,7 @@ const COLORS = [
 ]
 
 function ChartContainer() {
-  const { data, isLoading } = useMiserables()
+  const { data, isLoading, error, isError } = useMiserables()
   const links = useMemo(
     () =>
       arrayToMap(
@@ -70,7 +70,10 @@ function ChartContainer() {
     [values, data?.nodes, min, max]
   )
   const items = { ...nodes, ...links }
-  if (isLoading) return <div className="loader"></div>
+
+  if (isLoading) return <div className="loader" />
+
+  if (isError) throw new Error(error.message)
 
   return <Chart items={items} />
 }
