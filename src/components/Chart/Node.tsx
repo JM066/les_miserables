@@ -21,7 +21,7 @@ export function Node({ id, x, y, radius, color, label }: NodeProps) {
       />
       <text
         x={x}
-        y={y + radius + 12}
+        y={y + 3}
         textAnchor="middle"
         fontSize="10"
       >

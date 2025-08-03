@@ -68,19 +68,13 @@ function buildRelationshipData(
  */
 function calculateAllConnectionCounts(
   relMaps: Record<string, string[]>,
-  relList: string[],
+  relList: string[], 
   calculateConnections: (contacts: string[], visited: Set<string>) => number
 ): ConnectionCounts {
   const countMap: Record<string, number> = {}
   const counts: number[] = []
-  // Create a copy to avoid mutating the original array
-  const relListCopy = [...relList]
 
-  while (relListCopy.length > 0) {
-    const contact = relListCopy.pop()
-    if (!contact) continue
-
-    // Create a visited set for each character's influence calculation
+  for (const contact of relList) {
     const visited = new Set<string>()
     const count = calculateConnections(relMaps[contact] || [], visited)
 
@@ -178,9 +172,10 @@ function ChartContainer() {
       relationshipData.relMaps,
       relationshipData.relList,
       calculateInfluenceReach
-    )  
-    console.log({relationshipData})
-
+    )
+    
+    console.log('Valjean', result.countMap['Valjean'])
+    
     return result
   }, [relationshipData.relList, relationshipData.relMaps, calculateInfluenceReach])
 

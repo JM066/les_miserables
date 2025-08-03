@@ -28,25 +28,42 @@ export function Chart({ nodes, links }: ChartProps) {
   const linkEntries = useMemo(() => Object.entries(links), [links])
 
   const getNodePosition = (index: number) => {
-    const centerX = 300
-    const centerY = 250
-    const radius = 150
-    const angle = (index * 2 * Math.PI) / nodeEntries.length
+    const totalNodes = nodeEntries.length
+    const centerX = 600 
+    const centerY = 500 
+    
+    // Create multiple concentric rings to avoid overcrowding
+    const nodesPerRing = Math.ceil(Math.sqrt(totalNodes)) 
+    const ringIndex = Math.floor(index / nodesPerRing)
+    const positionInRing = index % nodesPerRing
+    
+    // Vary radius based on ring (inner rings smaller, outer rings larger)
+    const baseRadius = 120 + (ringIndex * 80) 
+    const angleStep = (2 * Math.PI) / Math.min(nodesPerRing, totalNodes - ringIndex * nodesPerRing)
+    const angle = positionInRing * angleStep
+    
+    // Add slight randomization to prevent perfect alignment
+    const randomOffset = Math.sin(index * 0.7) * 30
+    const finalRadius = baseRadius + randomOffset
     
     return {
-      x: centerX + Math.cos(angle) * radius,
-      y: centerY + Math.sin(angle) * radius
+      x: centerX + Math.cos(angle) * finalRadius,
+      y: centerY + Math.sin(angle) * finalRadius
     }
   }
 
   return (
-    <div className="w-full h-screen bg-white p-4">
-      <h1 className="text-xl font-bold mb-4">Les Misérables Network</h1>
-      <svg 
-        className="w-full h-full border border-gray-300" 
-        viewBox="0 0 600 500"
-        preserveAspectRatio="xMidYMid meet"
-      >
+    <div className="w-full h-screen bg-white flex flex-col">
+      <div className="p-4 bg-gray-50">
+        <h1 className="text-xl font-bold">Les Misérables Network</h1>
+      </div>
+      
+      <div className="overflow-auto bg-white w-full h-full">
+        <svg 
+          className="w-full h-full min-w-[1200px] min-h-[1000px]" 
+          viewBox="0 0 1200 1000" 
+          preserveAspectRatio="xMidYMid meet"
+        >
         <g>
           {linkEntries.map(([linkId, link]) => {
             const linkData = link as ChartLink
@@ -72,7 +89,7 @@ export function Chart({ nodes, links }: ChartProps) {
           {nodeEntries.map(([nodeId, node], index) => {
             const nodeData = node as ChartNode
             const pos = getNodePosition(index)
-            const radius = Math.max(5, nodeData.size * 10)
+            const radius = Math.max(15, nodeData.size * 35 + 15)
 
             return (
               <Node
@@ -88,6 +105,7 @@ export function Chart({ nodes, links }: ChartProps) {
           })}
         </g>
       </svg>
+      </div>
     </div>
   )
 }
