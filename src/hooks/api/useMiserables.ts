@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-export interface Miserables {
-  nodes: { name: string; group: number }[]
-  links: { source: number; target: number; value: number }[]
-}
+import type { Miserables } from "../../types"
+
 const useMiserables = () => {
   const queryKey = ["miserables"]
 
